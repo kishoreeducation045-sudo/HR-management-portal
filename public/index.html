@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobPortalDB — DBMS Mini Project</title>
+  <meta name="description" content="Interactive Job Portal demonstrating MongoDB NoSQL concepts: aggregation pipelines, multikey indexing, and controlled redundancy — DBMS Mini Project.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Chart.js from CDN — deferred for fast page load -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header id="app-header">
+    <div class="header-inner">
+      <a class="logo" href="#" onclick="switchSection('dashboard');return false;">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>JobPortal<span>DB</span></h1>
+          <small>DBMS Mini Project · MongoDB</small>
+        </div>
+      </a>
+
+      <nav id="main-nav" role="navigation" aria-label="Main sections">
+        <button class="nav-btn active" data-section="dashboard" id="nav-dashboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>Dashboard
+        </button>
+        <button class="nav-btn" data-section="jobs" id="nav-jobs">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>Jobs
+        </button>
+        <button class="nav-btn" data-section="applicants" id="nav-applicants">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>Applicants
+        </button>
+        <button class="nav-btn" data-section="applications" id="nav-applications">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>Applications
+        </button>
+        <button class="nav-btn" data-section="analytics" id="nav-analytics">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>Analytics
+        </button>
+        <button class="nav-btn" data-section="explore" id="nav-explore">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>Explore DB
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="theme-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle light/dark mode">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" role="main">
+
+    <!-- ============================= DASHBOARD ============================= -->
+    <section id="section-dashboard" class="section active" aria-labelledby="dash-title">
+      <div class="page-header">
+        <h2 id="dash-title">Dashboard Overview</h2>
+        <p>Real-time stats from the Job Portal database via live REST API calls</p>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card" style="--c:#6366f1">
+          <div class="stat-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+          </div>
+          <div>
+            <span class="stat-num" id="stat-jobs">—</span>
+            <div class="stat-lbl">Job Listings</div>
+            <div class="stat-trend">📊 Live count</div>
+          </div>
+        </div>
+        <div class="stat-card" style="--c:#8b5cf6">
+          <div class="stat-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <span class="stat-num" id="stat-applicants">—</span>
+            <div class="stat-lbl">Applicants</div>
+            <div class="stat-trend">👤 Registered</div>
+          </div>
+        </div>
+        <div class="stat-card" style="--c:#ec4899">
+          <div class="stat-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <span class="stat-num" id="stat-applications">—</span>
+            <div class="stat-lbl">Applications</div>
+            <div class="stat-trend">📋 Total submitted</div>
+          </div>
+        </div>
+        <div class="stat-card" style="--c:#14b8a6">
+          <div class="stat-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="stat-num" id="stat-companies">—</span>
+            <div class="stat-lbl">Companies</div>
+            <div class="stat-trend">🏢 Active hiring</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DBMS Concepts -->
+      <div class="concepts-strip">
+        <h3>🎓 DBMS Concepts Demonstrated</h3>
+        <div class="concepts-grid">
+          <div class="concept">
+            <div class="cbadge">NoSQL</div>
+            <h4>Embedded Documents</h4>
+            <p><code>skills[]</code> lives inside each Job document — no junction table needed unlike SQL's <code>job_skills</code> table.</p>
+          </div>
+          <div class="concept">
+            <div class="cbadge">Pipeline</div>
+            <h4>$unwind Aggregation</h4>
+            <p>Deconstructs the skills array: one job with 5 skills becomes 5 documents, then grouped and counted.</p>
+          </div>
+          <div class="concept">
+            <div class="cbadge">Index</div>
+            <h4>Multikey Index</h4>
+            <p>Index on <code>skills[]</code> turns COLLSCAN → IXSCAN. See the Explore DB tab for a live demo.</p>
+          </div>
+          <div class="concept">
+            <div class="cbadge">Redundancy</div>
+            <h4>Controlled Redundancy</h4>
+            <p>Application stores <code>job_title</code> and <code>applicant_name</code> to eliminate <code>$lookup</code> joins — NoSQL's read optimization.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-row">
+          <button class="action-btn" onclick="switchSection('jobs')" id="btn-browse-jobs">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>Browse Jobs
+          </button>
+          <button class="action-btn" onclick="switchSection('analytics')" id="btn-view-analytics">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>View Analytics
+          </button>
+          <button class="action-btn" onclick="switchSection('explore')" id="btn-explore">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>Explore DB Features
+          </button>
+          <button class="action-btn" onclick="openModal('add-job-modal')" id="btn-add-job-dash">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>Add New Job
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= JOBS ============================= -->
+    <section id="section-jobs" class="section" aria-labelledby="jobs-title">
+      <div class="page-header">
+        <h2 id="jobs-title">Job Listings</h2>
+        <p>Browse, filter and search <strong id="jobs-count-label">—</strong> job listings from the database</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="searchbox" id="job-search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="skill-filter" placeholder="Search by skill, title, or company…" autocomplete="off"/>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select" id="filter-workmode" aria-label="Filter by work mode">
+            <option value="">All Modes</option>
+            <option value="Remote">Remote</option>
+            <option value="On-Site">On-Site</option>
+            <option value="Hybrid">Hybrid</option>
+          </select>
+          <select class="filter-select" id="filter-type" aria-label="Filter by job type">
+            <option value="">All Types</option>
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+            <option value="Internship">Internship</option>
+            <option value="Contract">Contract</option>
+          </select>
+          <select class="filter-select" id="filter-exp" aria-label="Filter by experience">
+            <option value="">All Levels</option>
+            <option value="Entry">Entry</option>
+            <option value="Mid">Mid</option>
+            <option value="Senior">Senior</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-job-modal')" id="btn-add-job">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>Add Job
+        </button>
+      </div>
+
+      <div class="cards-grid" id="jobs-grid">
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+      </div>
+      <div class="pagination" id="jobs-pagination"></div>
+    </section>
+
+    <!-- ============================= APPLICANTS ============================= -->
+    <section id="section-applicants" class="section" aria-labelledby="applicants-title">
+      <div class="page-header">
+        <h2 id="applicants-title">Applicants</h2>
+        <p>Registered applicants with their skill profiles</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="searchbox">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="applicant-search" placeholder="Search by name or skill…" oninput="searchApplicants()" autocomplete="off"/>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-applicant-modal')" id="btn-add-applicant">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>Add Applicant
+        </button>
+      </div>
+
+      <div class="cards-grid" id="applicants-grid">
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+        <div class="skeleton skel-card"></div>
+      </div>
+    </section>
+
+    <!-- ============================= APPLICATIONS ============================= -->
+    <section id="section-applications" class="section" aria-labelledby="apps-title">
+      <div class="page-header">
+        <h2 id="apps-title">Applications</h2>
+        <p>Track all job applications and update their status</p>
+      </div>
+
+      <div class="toolbar">
+        <select class="filter-select" id="app-status-filter" onchange="loadApplications()" aria-label="Filter by status">
+          <option value="">All Statuses</option>
+          <option value="Applied">Applied</option>
+          <option value="Shortlisted">Shortlisted</option>
+          <option value="Interview">Interview</option>
+          <option value="Offered">Offered</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('add-application-modal')" id="btn-add-application">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>New Application
+        </button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="applications-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Job ID</th>
+              <th>Job Title</th>
+              <th>Applicant ID</th>
+              <th>Applicant</th>
+              <th>Status</th>
+              <th>Applied On</th>
+              <th>Update</th>
+            </tr>
+          </thead>
+          <tbody id="applications-tbody">
+            <tr><td colspan="8" class="loading-state">Loading applications…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="apps-pagination"></div>
+    </section>
+
+    <!-- ============================= ANALYTICS ============================= -->
+    <section id="section-analytics" class="section" aria-labelledby="analytics-title">
+      <div class="page-header">
+        <h2 id="analytics-title">Analytics — Aggregation Pipelines</h2>
+        <p>Live MongoDB aggregation results — the core DBMS demonstration</p>
+      </div>
+
+      <div class="analytics-grid">
+        <!-- Chart 1: Skill Demand (Bar) -->
+        <div class="a-card" id="card-skill-demand">
+          <div class="a-head">
+            <h3>📊 Skill Demand Analysis</h3>
+            <span class="pipe-badge">$unwind → $group → $sort</span>
+          </div>
+          <p class="a-desc">Deconstructs each job's <code>skills[]</code> array, groups by skill name, and counts market demand across <strong>5,000+ listings</strong>.</p>
+          <div class="chart-wrap"><canvas id="chart-skills" aria-label="Skill demand bar chart"></canvas></div>
+          <details class="pipe-code">
+            <summary>View Pipeline Code</summary>
+            <pre><code>[
+  { $unwind: "$skills" },
+  { $group: { _id: "$skills", count: { $sum: 1 } } },
+  { $sort: { count: -1 } },
+  { $limit: 15 }
+]</code></pre>
+          </details>
+        </div>
+
+        <!-- Chart 2: Application Funnel (Doughnut) -->
+        <div class="a-card" id="card-funnel">
+          <div class="a-head">
+            <h3>📈 Application Funnel</h3>
+            <span class="pipe-badge">$group → $sort</span>
+          </div>
+          <p class="a-desc">Groups all applications by their status to visualise the hiring funnel — from Applied to Offered or Rejected.</p>
+          <div class="chart-wrap-sm"><canvas id="chart-funnel" aria-label="Application funnel doughnut chart"></canvas></div>
+          <details class="pipe-code">
+            <summary>View Pipeline Code</summary>
+            <pre><code>[
+  { $group: { _id: "$status", count: { $sum: 1 } } },
+  { $sort: { count: -1 } }
+]</code></pre>
+          </details>
+        </div>
+
+        <!-- Chart 3: Jobs Per Company (Horizontal Bar) -->
+        <div class="a-card" id="card-company">
+          <div class="a-head">
+            <h3>🏢 Jobs Per Company</h3>
+            <span class="pipe-badge">$group → $sort</span>
+          </div>
+          <p class="a-desc">Groups jobs by company name, counting listings and calculating average salary. Sorted by total job count descending.</p>
+          <div class="chart-wrap"><canvas id="chart-company" aria-label="Jobs per company bar chart"></canvas></div>
+          <details class="pipe-code">
+            <summary>View Pipeline Code</summary>
+            <pre><code>[
+  { $group: { _id: "$company", totalJobs: { $sum: 1 }, avgSalary: { $avg: "$salary" } } },
+  { $sort: { totalJobs: -1 } },
+  { $limit: 12 }
+]</code></pre>
+          </details>
+        </div>
+
+        <!-- Chart 4: Salary by Experience (Bar) -->
+        <div class="a-card" id="card-salary">
+          <div class="a-head">
+            <h3>💰 Salary by Experience</h3>
+            <span class="pipe-badge">$match → $group → $sort</span>
+          </div>
+          <p class="a-desc">Aggregates salary statistics grouped by experience level — shows the average, minimum, and maximum salary at each career stage.</p>
+          <div class="chart-wrap"><canvas id="chart-salary" aria-label="Salary by experience level chart"></canvas></div>
+        </div>
+
+        <!-- Chart 5: Jobs by Location (Bar) -->
+        <div class="a-card" id="card-location">
+          <div class="a-head">
+            <h3>📍 Jobs by City</h3>
+            <span class="pipe-badge">$group → $sort → $limit</span>
+          </div>
+          <p class="a-desc">Groups job postings by city and ranks the top 10 hiring hubs in India, with average salary overlay.</p>
+          <div class="chart-wrap"><canvas id="chart-location" aria-label="Jobs by location chart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= EXPLORE DB ============================= -->
+    <section id="section-explore" class="section" aria-labelledby="explore-title">
+      <div class="page-header">
+        <h2 id="explore-title">Explore DB Features</h2>
+        <p>Interactive database demos — Index Explain Analyzer · Skill Matchmaking · Redundancy Benchmark</p>
+      </div>
+
+      <div class="analytics-grid">
+
+        <!-- Feature 1: Explain Analyzer -->
+        <div class="a-card" style="grid-column:1/-1">
+          <div class="a-head">
+            <h3>🔍 Index Explain Analyzer</h3>
+            <span class="pipe-badge">COLLSCAN vs IXSCAN</span>
+          </div>
+          <p class="a-desc">Enter any skill and compare MongoDB's query execution <em>with</em> and <em>without</em> the multikey index on <code>skills[]</code>. This proves why indexing is critical for performance at scale.</p>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <div class="searchbox" style="flex:1;min-width:200px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="explain-skill" placeholder="Enter a skill (e.g. Python, React, AWS)…" value="Python" autocomplete="off"/>
+            </div>
+            <button class="btn btn-primary" onclick="runExplain()" id="btn-run-explain">Run Explain</button>
+          </div>
+          <div id="explain-output">
+            <p class="empty-state"><p>Enter a skill and click <strong>Run Explain</strong> to see the comparison.</p></p>
+          </div>
+        </div>
+
+        <!-- Feature 2: Skill Matchmaking -->
+        <div class="a-card">
+          <div class="a-head">
+            <h3>🎯 Skill Matchmaking</h3>
+            <span class="pipe-badge">$setIntersection</span>
+          </div>
+          <p class="a-desc">Select an applicant to find the best-matching jobs using MongoDB's <code>$setIntersection</code> — ranks by compatibility percentage.</p>
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <select class="filter-select" id="match-applicant-select" style="flex:1;" aria-label="Select applicant for matchmaking">
+              <option value="">Select an applicant…</option>
+            </select>
+            <button class="btn btn-primary" onclick="runMatchmaking()" id="btn-run-match">Find Matches</button>
+          </div>
+          <div id="match-output">
+            <p class="empty-state"><p>Select an applicant to begin matchmaking.</p></p>
+          </div>
+        </div>
+
+        <!-- Feature 3: Redundancy Benchmark -->
+        <div class="a-card">
+          <div class="a-head">
+            <h3>⚡ Redundancy Benchmark</h3>
+            <span class="pipe-badge">Normalized vs Denormalized</span>
+          </div>
+          <p class="a-desc">Measures the performance difference between a <strong>normalized query</strong> (using <code>$lookup</code> across 3 collections) and a <strong>denormalized query</strong> (direct field read — no join). This demonstrates the core NoSQL design philosophy.</p>
+          <div style="margin-bottom:14px;">
+            <button class="btn btn-primary" onclick="runBenchmark()" id="btn-run-bench">Run Benchmark (20 iterations)</button>
+          </div>
+          <div id="bench-output">
+            <p class="empty-state"><p>Click <strong>Run Benchmark</strong> to compare query strategies.</p></p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Add Job Modal -->
+  <div class="modal-overlay" id="add-job-modal" role="dialog" aria-modal="true" aria-labelledby="modal-job-title">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-job-title">Add New Job</h3>
+        <button class="modal-close" onclick="closeModal('add-job-modal')" aria-label="Close">&times;</button>
+      </div>
+      <form id="add-job-form" onsubmit="addJob(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="job-id">Job ID</label>
+            <input type="text" id="job-id" placeholder="e.g. J9001" required/>
+          </div>
+          <div class="form-group">
+            <label for="job-type-inp">Job Type</label>
+            <select id="job-type-inp">
+              <option>Full-Time</option><option>Part-Time</option><option>Internship</option><option>Contract</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="job-title">Job Title</label>
+          <input type="text" id="job-title" placeholder="e.g. Senior Backend Developer" required/>
+        </div>
+        <div class="form-group">
+          <label for="job-company">Company</label>
+          <input type="text" id="job-company" placeholder="e.g. TCS, Infosys, Razorpay" required/>
+        </div>
+        <div class="form-group">
+          <label for="job-skills">Skills (comma separated)</label>
+          <input type="text" id="job-skills" placeholder="e.g. Node.js, MongoDB, React" required/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="job-salary">Salary (₹ per year)</label>
+            <input type="number" id="job-salary" placeholder="e.g. 1200000" required/>
+          </div>
+          <div class="form-group">
+            <label for="job-location">City</label>
+            <input type="text" id="job-location" placeholder="e.g. Bangalore" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="job-workmode">Work Mode</label>
+            <select id="job-workmode">
+              <option>On-Site</option><option>Remote</option><option>Hybrid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="job-exp-level">Experience Level</label>
+            <select id="job-exp-level">
+              <option value="">—</option><option>Entry</option><option>Mid</option><option>Senior</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="btn-submit-job">Create Job Listing</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Applicant Modal -->
+  <div class="modal-overlay" id="add-applicant-modal" role="dialog" aria-modal="true" aria-labelledby="modal-applicant-title">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-applicant-title">Register Applicant</h3>
+        <button class="modal-close" onclick="closeModal('add-applicant-modal')" aria-label="Close">&times;</button>
+      </div>
+      <form id="add-applicant-form" onsubmit="addApplicant(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="applicant-id">Applicant ID</label>
+            <input type="text" id="applicant-id" placeholder="e.g. A0501" required/>
+          </div>
+          <div class="form-group">
+            <label for="applicant-exp">Experience (years)</label>
+            <input type="number" id="applicant-exp" placeholder="e.g. 3" min="0" max="40" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="applicant-name">Full Name</label>
+          <input type="text" id="applicant-name" placeholder="e.g. Rahul Sharma" required/>
+        </div>
+        <div class="form-group">
+          <label for="applicant-email">Email</label>
+          <input type="email" id="applicant-email" placeholder="e.g. rahul@email.com" required/>
+        </div>
+        <div class="form-group">
+          <label for="applicant-skills">Skills (comma separated)</label>
+          <input type="text" id="applicant-skills" placeholder="e.g. Python, SQL, React" required/>
+        </div>
+        <div class="form-group">
+          <label for="applicant-resume">Resume Link (optional)</label>
+          <input type="url" id="applicant-resume" placeholder="https://drive.google.com/…"/>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="btn-submit-applicant">Register Applicant</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Application Modal -->
+  <div class="modal-overlay" id="add-application-modal" role="dialog" aria-modal="true" aria-labelledby="modal-app-title">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-app-title">New Application</h3>
+        <button class="modal-close" onclick="closeModal('add-application-modal')" aria-label="Close">&times;</button>
+      </div>
+      <form id="add-application-form" onsubmit="addApplication(event)">
+        <div class="form-group">
+          <label for="application-id">Application ID</label>
+          <input type="text" id="application-id" placeholder="e.g. AP02501" required/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="application-job">Job ID</label>
+            <input type="text" id="application-job" placeholder="e.g. J001" required/>
+          </div>
+          <div class="form-group">
+            <label for="application-app">Applicant ID</label>
+            <input type="text" id="application-app" placeholder="e.g. A001" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="btn-submit-application">Submit Application</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
