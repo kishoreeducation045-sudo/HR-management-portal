@@ -5,6 +5,20 @@ const Applicant = require('../models/Applicant');
 // POST /api/applicants — Register a new applicant
 router.post('/', async (req, res) => {
   try {
+    const { app_id, email } = req.body;
+    
+    // Regex validation
+    const appIdRegex = /^A\d{4}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+    if (!appIdRegex.test(app_id)) {
+      return res.status(400).json({ success: false, error: 'Applicant ID must start with "A" followed by 4 digits (e.g. A0501)' });
+    }
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, error: 'Email must be a valid @gmail.com address' });
+    }
+
     const applicant = new Applicant(req.body);
     await applicant.save();
     res.status(201).json({ success: true, data: applicant });

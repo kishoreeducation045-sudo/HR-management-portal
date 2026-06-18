@@ -10,6 +10,12 @@ router.post('/', async (req, res) => {
   try {
     const { appl_id, job_id, app_id } = req.body;
 
+    // Regex check
+    const appIdRegex = /^A\d{4}$/;
+    if (!appIdRegex.test(app_id)) {
+      return res.status(400).json({ success: false, error: 'Applicant ID must start with "A" followed by 4 digits (e.g. A0501)' });
+    }
+
     // Fetch names to denormalize into the application document
     const [job, applicant] = await Promise.all([
       Job.findOne({ job_id }, { title: 1 }),

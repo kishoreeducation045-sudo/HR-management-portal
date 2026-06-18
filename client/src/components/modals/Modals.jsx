@@ -65,6 +65,21 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
 
   const submit = async e => {
     e.preventDefault();
+
+    // Regex checks
+    const appIdRegex = /^A\d{4}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+
+    if (!appIdRegex.test(form.app_id)) {
+      showToast('Applicant ID must start with "A" followed by 4 digits (e.g., A0501)', true);
+      return;
+    }
+
+    if (!emailRegex.test(form.email)) {
+      showToast('Email must be a valid @gmail.com address (e.g., name@gmail.com)', true);
+      return;
+    }
+
     try {
       const res = await fetch('/api/applicants', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -79,11 +94,32 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
     <ModalShell onClose={onClose} title="Register Applicant">
       <form onSubmit={submit}>
         <div className="form-row">
-          <div className="form-group"><label>Applicant ID</label><input value={form.app_id} onChange={set('app_id')} placeholder="e.g. A0501" required /></div>
+          <div className="form-group">
+            <label>Applicant ID</label>
+            <input 
+              value={form.app_id} 
+              onChange={set('app_id')} 
+              placeholder="e.g. A0501" 
+              pattern="A\d{4}"
+              title="Must start with 'A' followed by exactly 4 digits (e.g., A0501)"
+              required 
+            />
+          </div>
           <div className="form-group"><label>Experience (years)</label><input type="number" value={form.experience} onChange={set('experience')} placeholder="e.g. 3" min="0" max="40" required /></div>
         </div>
         <div className="form-group"><label>Full Name</label><input value={form.name} onChange={set('name')} placeholder="e.g. Rahul Sharma" required /></div>
-        <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={set('email')} placeholder="e.g. rahul@email.com" required /></div>
+        <div className="form-group">
+          <label>Email</label>
+          <input 
+            type="email" 
+            value={form.email} 
+            onChange={set('email')} 
+            placeholder="e.g. rahul@gmail.com" 
+            pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
+            title="Must be a valid @gmail.com address (e.g., name@gmail.com)"
+            required 
+          />
+        </div>
         <div className="form-group"><label>Skills (comma separated)</label><input value={form.skills} onChange={set('skills')} placeholder="e.g. Python, SQL, React" required /></div>
         <div className="form-group"><label>Resume Link (optional)</label><input type="url" value={form.resume_link} onChange={set('resume_link')} placeholder="https://drive.google.com/…" /></div>
         <button type="submit" className="btn btn-primary btn-full">Register Applicant</button>
@@ -98,6 +134,14 @@ export function AddApplicationModal({ onClose, onSuccess, showToast }) {
 
   const submit = async e => {
     e.preventDefault();
+
+    // Regex check
+    const appIdRegex = /^A\d{4}$/;
+    if (!appIdRegex.test(form.app_id)) {
+      showToast('Applicant ID must start with "A" followed by 4 digits (e.g., A0501)', true);
+      return;
+    }
+
     try {
       const res = await fetch('/api/applications', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -114,7 +158,17 @@ export function AddApplicationModal({ onClose, onSuccess, showToast }) {
         <div className="form-group"><label>Application ID</label><input value={form.appl_id} onChange={set('appl_id')} placeholder="e.g. AP02501" required /></div>
         <div className="form-row">
           <div className="form-group"><label>Job ID</label><input value={form.job_id} onChange={set('job_id')} placeholder="e.g. J001" required /></div>
-          <div className="form-group"><label>Applicant ID</label><input value={form.app_id} onChange={set('app_id')} placeholder="e.g. A001" required /></div>
+          <div className="form-group">
+            <label>Applicant ID</label>
+            <input 
+              value={form.app_id} 
+              onChange={set('app_id')} 
+              placeholder="e.g. A0501" 
+              pattern="A\d{4}"
+              title="Must start with 'A' followed by exactly 4 digits (e.g., A0501)"
+              required 
+            />
+          </div>
         </div>
         <button type="submit" className="btn btn-primary btn-full">Submit Application</button>
       </form>
