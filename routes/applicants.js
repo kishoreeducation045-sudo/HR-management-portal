@@ -9,7 +9,7 @@ router.post('/', async (req, res) => {
     
     // Regex validation
     const appIdRegex = /^A\d{4}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     const nameRegex = /^[a-zA-Z\s]+$/;
 
     if (!appIdRegex.test(app_id)) {

@@ -78,9 +78,15 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
   const submit = async e => {
     e.preventDefault();
 
+    // Check required fields
+    if (!form.app_id.trim() || !form.name.trim() || !form.email.trim() || !form.skills.trim() || form.experience === '') {
+      showToast('Please fill out all required fields', true);
+      return;
+    }
+
     // Regex checks
     const appIdRegex = /^A\d{4}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     const nameRegex = /^[a-zA-Z\s]+$/;
 
     if (!appIdRegex.test(form.app_id)) {
@@ -110,7 +116,7 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
 
   return (
     <ModalShell onClose={onClose} title="Register Applicant">
-      <form onSubmit={submit}>
+      <form onSubmit={submit} noValidate>
         <div className="form-row">
           <div className="form-group">
             <label>Applicant ID</label>
@@ -118,8 +124,6 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
               value={form.app_id} 
               onChange={set('app_id')} 
               placeholder="e.g. A0501" 
-              pattern="A\d{4}"
-              title="Must start with 'A' followed by exactly 4 digits (e.g., A0501)"
               required 
             />
           </div>
@@ -131,8 +135,6 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
             value={form.name} 
             onChange={handleNameChange} 
             placeholder="e.g. Rahul Sharma" 
-            pattern="[a-zA-Z\s]+"
-            title="Full Name must contain only alphabets and spaces"
             required 
           />
         </div>
@@ -143,8 +145,6 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
             value={form.email} 
             onChange={set('email')} 
             placeholder="e.g. rahul@gmail.com" 
-            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-            title="Email is invalid enter valid Email"
             required 
           />
         </div>
