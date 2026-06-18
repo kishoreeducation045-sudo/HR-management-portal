@@ -1,14 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale, LinearScale, BarElement, ArcElement,
-  PointElement, LineElement, Tooltip, Legend, Filler,
-} from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Tooltip, Legend, Filler);
+import 'chart.js/auto';
 
 const PALETTE = ['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#22c55e','#06b6d4','#ef4444','#a78bfa','#fbbf24','#34d399','#f472b6'];
 const STATUS_COLORS = { Applied:'#6366f1', Shortlisted:'#f59e0b', Interview:'#8b5cf6', Offered:'#22c55e', Rejected:'#ef4444' };
