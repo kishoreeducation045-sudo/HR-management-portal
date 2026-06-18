@@ -63,20 +63,38 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
   const [form, setForm] = useState({ app_id: '', name: '', email: '', skills: '', experience: '', resume_link: '' });
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
+  const handleNameChange = e => {
+    const rawVal = e.target.value;
+    // Remove non-alphabetic/non-space characters
+    const cleaned = rawVal.replace(/[^a-zA-Z\s]/g, '');
+    // Capitalize first letter of each word
+    const formatted = cleaned
+      .split(' ')
+      .map(word => word ? word.charAt(0).toUpperCase() + word.slice(1) : '')
+      .join(' ');
+    setForm(f => ({ ...f, name: formatted }));
+  };
+
   const submit = async e => {
     e.preventDefault();
 
     // Regex checks
     const appIdRegex = /^A\d{4}$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const nameRegex = /^[a-zA-Z\s]+$/;
 
     if (!appIdRegex.test(form.app_id)) {
       showToast('Applicant ID must start with "A" followed by 4 digits (e.g., A0501)', true);
       return;
     }
 
+    if (!nameRegex.test(form.name.trim())) {
+      showToast('Full Name must contain only alphabets and spaces', true);
+      return;
+    }
+
     if (!emailRegex.test(form.email)) {
-      showToast('Email must be a valid @gmail.com address (e.g., name@gmail.com)', true);
+      showToast('Email is invalid enter valid Email', true);
       return;
     }
 
@@ -107,16 +125,26 @@ export function AddApplicantModal({ onClose, onSuccess, showToast }) {
           </div>
           <div className="form-group"><label>Experience (years)</label><input type="number" value={form.experience} onChange={set('experience')} placeholder="e.g. 3" min="0" max="40" required /></div>
         </div>
-        <div className="form-group"><label>Full Name</label><input value={form.name} onChange={set('name')} placeholder="e.g. Rahul Sharma" required /></div>
+        <div className="form-group">
+          <label>Full Name</label>
+          <input 
+            value={form.name} 
+            onChange={handleNameChange} 
+            placeholder="e.g. Rahul Sharma" 
+            pattern="[a-zA-Z\s]+"
+            title="Full Name must contain only alphabets and spaces"
+            required 
+          />
+        </div>
         <div className="form-group">
           <label>Email</label>
           <input 
-            type="email" 
+            type="text" 
             value={form.email} 
             onChange={set('email')} 
             placeholder="e.g. rahul@gmail.com" 
-            pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
-            title="Must be a valid @gmail.com address (e.g., name@gmail.com)"
+            pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            title="Email is invalid enter valid Email"
             required 
           />
         </div>
