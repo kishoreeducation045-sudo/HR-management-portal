@@ -6,11 +6,15 @@ require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// Middleware — allow all origins (Render deployment + local dev)
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend files
+// Serve React build (client/dist) — production
+const clientDist = path.join(__dirname, 'client', 'dist');
+app.use(express.static(clientDist));
+
+// Fallback: serve old vanilla public/ for local development
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Connect to MongoDB
@@ -62,8 +66,15 @@ app.get('/api', (req, res) => {
 });
 
 // Serve frontend for all non-API routes
+// Priority: React build → vanilla public/
 app.get('/*splat', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const fs = require('fs');
+  const reactIndex = path.join(__dirname, 'client', 'dist', 'index.html');
+  if (fs.existsSync(reactIndex)) {
+    res.sendFile(reactIndex);
+  } else {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
 });
 
 const PORT = process.env.PORT || 3000;
